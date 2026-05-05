@@ -140,7 +140,7 @@ class AdaSprayNode(BaseNode):
     """
     Calculation based on lecture 14/15 Exponential Weighted Moving Average Estimator -->
     
-    Each node maintains an EWMA estimate of its local encounter rate.
+    Each node maintains an EWMA estimate (ETX) of its local encounter rate.
     K is recomputed at EVERY ENCOUNTER as:
 
         K = clip(round(K_base * (lambda_ref / lambda_hat)), K_min, K_max)
@@ -176,7 +176,7 @@ class AdaSprayNode(BaseNode):
         dt = t - self.last_encounter_time
         if dt > 0:
             lambda_instant = 1.0 / dt
-            # EWMA: new = alpha * instant + (1-alpha) * old
+            # EWMA ETX: new = alpha * instant + (1-alpha) * old
             self.lambda_hat = (self.alpha * lambda_instant
                                + (1 - self.alpha) * self.lambda_hat)
         self.last_encounter_time = t
