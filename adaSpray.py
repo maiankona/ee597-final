@@ -93,10 +93,11 @@ class HoldAndDeliverNode(BaseNode):
 
 class EpidemicNode(BaseNode):
     def on_encounter(self, other):
-        if self.has_packet and not other.has_packet:
+        if self.has_packet:
             self.transmissions += 1
-            other.has_packet = True
-            if other.nid == self.destination:
+            if not other.has_packet:
+              other.has_packet = True
+              if other.nid == self.destination:
                 other.delivery_time = self.sim.time
 
 
