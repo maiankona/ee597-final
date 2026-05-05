@@ -1,0 +1,254 @@
+{
+  "hold": {
+    "0.2": {
+      "delivery_ratio": 0.5,
+      "mean_delay": 94.39313585737962,
+      "std_delay": 36.95186387749868,
+      "mean_tx": 0.84,
+      "std_tx": 1.03726484918122,
+      "n_trials": 50
+    },
+    "0.5": {
+      "delivery_ratio": 0.74,
+      "mean_delay": 89.7321000195137,
+      "std_delay": 38.959712046030994,
+      "mean_tx": 1.5,
+      "std_tx": 1.3887301496588271,
+      "n_trials": 50
+    },
+    "1.0": {
+      "delivery_ratio": 0.98,
+      "mean_delay": 110.65251002524923,
+      "std_delay": 32.641910866219185,
+      "mean_tx": 3.48,
+      "std_tx": 1.6318263212907012,
+      "n_trials": 50
+    },
+    "2.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 124.16472014919647,
+      "std_delay": 29.061866464751606,
+      "mean_tx": 6.7,
+      "std_tx": 2.808514750191071,
+      "n_trials": 50
+    },
+    "4.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 138.84742445751795,
+      "std_delay": 10.997572066687233,
+      "mean_tx": 12.88,
+      "std_tx": 3.8684490379457857,
+      "n_trials": 50
+    }
+  },
+  "epidemic": {
+    "0.2": {
+      "delivery_ratio": 0.94,
+      "mean_delay": 67.30589263739354,
+      "std_delay": 40.44561205599381,
+      "mean_tx": 8.24,
+      "std_tx": 1.7561553555004925,
+      "n_trials": 50
+    },
+    "0.5": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 30.277855111814496,
+      "std_delay": 18.085295936562584,
+      "mean_tx": 9.0,
+      "std_tx": 0.0,
+      "n_trials": 50
+    },
+    "1.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 13.003155771139078,
+      "std_delay": 8.24979362001961,
+      "mean_tx": 9.0,
+      "std_tx": 0.0,
+      "n_trials": 50
+    },
+    "2.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 7.159073947599232,
+      "std_delay": 4.8789148500645965,
+      "mean_tx": 9.0,
+      "std_tx": 0.0,
+      "n_trials": 50
+    },
+    "4.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 4.142871131161866,
+      "std_delay": 2.383866611550104,
+      "mean_tx": 9.0,
+      "std_tx": 0.0,
+      "n_trials": 50
+    }
+  },
+  "adaspray": {
+    "0.2": {
+      "delivery_ratio": 0.86,
+      "mean_delay": 72.33186138554474,
+      "std_delay": 46.55611122048472,
+      "mean_tx": 4.76,
+      "std_tx": 1.8796439089598318,
+      "n_trials": 50
+    },
+    "0.5": {
+      "delivery_ratio": 0.98,
+      "mean_delay": 38.19132660641782,
+      "std_delay": 28.170819434233763,
+      "mean_tx": 8.12,
+      "std_tx": 2.7377929439754265,
+      "n_trials": 50
+    },
+    "1.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 14.61066868674186,
+      "std_delay": 10.246933340145443,
+      "mean_tx": 15.08,
+      "std_tx": 3.8430430119680854,
+      "n_trials": 50
+    },
+    "2.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 9.0671129739276,
+      "std_delay": 6.884984910575748,
+      "mean_tx": 23.34,
+      "std_tx": 8.81003602114529,
+      "n_trials": 50
+    },
+    "4.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 5.462447598283858,
+      "std_delay": 3.241138907013475,
+      "mean_tx": 39.86,
+      "std_tx": 14.5139060692756,
+      "n_trials": 50
+    }
+  },
+  "fixed_K2": {
+    "0.2": {
+      "delivery_ratio": 0.76,
+      "mean_delay": 71.43410339249485,
+      "std_delay": 48.48502187127723,
+      "mean_tx": 2.46,
+      "std_tx": 1.312576528381162,
+      "n_trials": 50
+    },
+    "0.5": {
+      "delivery_ratio": 0.9,
+      "mean_delay": 40.8525680149054,
+      "std_delay": 29.681736567098167,
+      "mean_tx": 3.92,
+      "std_tx": 1.8276783533393688,
+      "n_trials": 50
+    },
+    "1.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 18.98000357951913,
+      "std_delay": 15.52219198342724,
+      "mean_tx": 7.62,
+      "std_tx": 2.3637569542521732,
+      "n_trials": 50
+    },
+    "2.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 11.574577716098442,
+      "std_delay": 9.679251326243781,
+      "mean_tx": 14.14,
+      "std_tx": 3.779698724631315,
+      "n_trials": 50
+    },
+    "4.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 6.392390439041763,
+      "std_delay": 4.9591160711865365,
+      "mean_tx": 27.06,
+      "std_tx": 5.856829259897529,
+      "n_trials": 50
+    }
+  },
+  "fixed_K4": {
+    "0.2": {
+      "delivery_ratio": 0.86,
+      "mean_delay": 71.45278934230552,
+      "std_delay": 46.545452228136696,
+      "mean_tx": 5.08,
+      "std_tx": 1.8934904600892448,
+      "n_trials": 50
+    },
+    "0.5": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 37.97638035164152,
+      "std_delay": 27.879741924755958,
+      "mean_tx": 8.5,
+      "std_tx": 2.6049403612586386,
+      "n_trials": 50
+    },
+    "1.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 14.61066868674186,
+      "std_delay": 10.246933340145443,
+      "mean_tx": 16.04,
+      "std_tx": 3.499037768604741,
+      "n_trials": 50
+    },
+    "2.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 8.211587424180795,
+      "std_delay": 6.206629644853662,
+      "mean_tx": 29.6,
+      "std_tx": 4.7979587496419045,
+      "n_trials": 50
+    },
+    "4.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 4.849999272657359,
+      "std_delay": 2.8893026626793987,
+      "mean_tx": 55.1,
+      "std_tx": 7.704358692139331,
+      "n_trials": 50
+    }
+  },
+  "fixed_K8": {
+    "0.2": {
+      "delivery_ratio": 0.92,
+      "mean_delay": 67.31781474845529,
+      "std_delay": 41.513058137091484,
+      "mean_tx": 8.64,
+      "std_tx": 2.760952216692122,
+      "n_trials": 50
+    },
+    "0.5": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 31.20269883924832,
+      "std_delay": 19.104022963304253,
+      "mean_tx": 16.08,
+      "std_tx": 3.409710024177949,
+      "n_trials": 50
+    },
+    "1.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 13.92906709617272,
+      "std_delay": 8.988672162418887,
+      "mean_tx": 31.24,
+      "std_tx": 5.032790437901894,
+      "n_trials": 50
+    },
+    "2.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 7.72462847190029,
+      "std_delay": 5.1831053206033,
+      "mean_tx": 58.0,
+      "std_tx": 6.910506641398757,
+      "n_trials": 50
+    },
+    "4.0": {
+      "delivery_ratio": 1.0,
+      "mean_delay": 4.328368519604015,
+      "std_delay": 2.509420351316426,
+      "mean_tx": 109.9,
+      "std_tx": 9.918545811781492,
+      "n_trials": 50
+    }
+  }
+}
