@@ -1,6 +1,6 @@
 """
-AdaSpray: Adaptive Spray-and-Wait Routing for ICMNs
-====================================================
+AdaSpray: Adaptive Spray & Wait Routing for ICMNs
+
 Implements and compares four protocols using PyWiSim's encounter model:
   1. Hold-and-Deliver  (baseline: K=1)
   2. Epidemic Flooding (baseline: K=inf)
@@ -8,11 +8,11 @@ Implements and compares four protocols using PyWiSim's encounter model:
   4. AdaSpray — adaptive K via EWMA encounter-rate estimation
 
 Usage:
-    python adaspray.py
+    python3 adaSpray.py
 
 Outputs:
     results.json  — raw per-trial results for all protocols/configs
-    (run plot_results.py to generate figures)
+    run plot_results.py to generate figs
 """
 
 import random
@@ -21,47 +21,34 @@ import json
 from collections import defaultdict
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Minimal encounter-based simulator
-# (mirrors PyWiSim's encounter.py API so this plugs straight in)
-# ─────────────────────────────────────────────────────────────────────────────
+# minimal encounter-based simulator based on PyWiSim EncounterManager API
 
 class Simulator:
-    """
-    Discrete-time encounter simulator.
-    At each time step exactly one pairwise encounter is drawn uniformly
-    at random from all possible pairs.  This matches the hub-node model
-    from class and the PyWiSim EncounterManager (Poisson encounters).
-    """
     def __init__(self, n_nodes, duration, encounter_rate, seed=42):
         self.n = n_nodes
         self.duration = duration
-        self.encounter_rate = encounter_rate  # expected encounters per time unit
+        self.encounter_rate = encounter_rate  
         self.rng = random.Random(seed)
         self.time = 0.0
-        self.nodes = {}   # nid -> protocol node object
-        self.log = []     # (time, event_str)
+        self.nodes = {}   
+        self.log = []    
 
     def add_node(self, node):
         self.nodes[node.nid] = node
         node.sim = self
 
     def run(self):
-        """Run simulation: draw encounters via Poisson process."""
         t = 0.0
         while t < self.duration:
-            # Inter-encounter time ~ Exp(encounter_rate)
             dt = self.rng.expovariate(self.encounter_rate)
             t += dt
             if t >= self.duration:
                 break
             self.time = t
-            # Pick a random pair
             nids = list(self.nodes.keys())
             a, b = self.rng.sample(nids, 2)
             node_a = self.nodes[a]
             node_b = self.nodes[b]
-            # Notify both nodes of the encounter
             node_a.on_encounter(node_b)
             node_b.on_encounter(node_a)
 
@@ -73,12 +60,12 @@ class Simulator:
 class BaseNode:
     def __init__(self, nid, source, destination):
         self.nid = nid
-        self.source = source        # nid of packet origin
-        self.destination = destination  # nid of packet destination
+        self.source = source        
+        self.destination = destination  
         self.sim = None
         self.has_packet = (nid == source)
-        self.delivery_time = None   # set when destination receives packet
-        self.transmissions = 0      # total unicast sends this node performed
+        self.delivery_time = None   
+        self.transmissions = 0      
 
     def on_encounter(self, other):
         raise NotImplementedError
@@ -89,11 +76,9 @@ class BaseNode:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Protocol 1 — Hold and Deliver
-# ─────────────────────────────────────────────────────────────────────────────
-
+# Hold and Deliver
+# ──────────-──────────────────────────────────────────────────────────────────
 class HoldAndDeliverNode(BaseNode):
-    """Source holds the packet and waits until it directly meets destination."""
     def on_encounter(self, other):
         if self.nid == self.source and self.has_packet:
             if other.nid == self.destination:
@@ -103,11 +88,10 @@ class HoldAndDeliverNode(BaseNode):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Protocol 2 — Epidemic
+# Epidemic Flooding
 # ─────────────────────────────────────────────────────────────────────────────
 
 class EpidemicNode(BaseNode):
-    """Copy to every encountered node; they copy to every node they meet."""
     def on_encounter(self, other):
         if self.has_packet and not other.has_packet:
             self.transmissions += 1
@@ -117,13 +101,12 @@ class EpidemicNode(BaseNode):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Protocol 3 — Fixed Spray and Wait
+# Spray & Wait
 # ─────────────────────────────────────────────────────────────────────────────
 
 class FixedSprayNode(BaseNode):
     """
-    Binary Spray-and-Wait (Spyropoulos et al. 2005).
-    Each node tracks how many virtual copies it holds.
+    From lecture 18
     Spray phase: node with m>=2 gives floor(m/2) copies to encountered node.
     Wait phase: node with 1 copy only delivers directly to destination.
     """
@@ -133,7 +116,6 @@ class FixedSprayNode(BaseNode):
         self.copies = K if nid == source else 0
 
     def on_encounter(self, other):
-        # Check direct delivery first
         if self.copies >= 1 and other.nid == self.destination:
             self.transmissions += 1
             other.has_packet = True
@@ -141,7 +123,7 @@ class FixedSprayNode(BaseNode):
                 other.delivery_time = self.sim.time
             return
 
-        # Spray phase
+        # spray phase
         if self.copies >= 2 and other.copies == 0:
             give = self.copies // 2
             self.transmissions += 1
@@ -151,29 +133,25 @@ class FixedSprayNode(BaseNode):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Protocol 4 — AdaSpray (our contribution)
+# Adaptive Spray & Wait
 # ─────────────────────────────────────────────────────────────────────────────
 
 class AdaSprayNode(BaseNode):
     """
-    Adaptive Spray-and-Wait.
-
+    Calculation based on lecture 14/15 Exponential Weighted Moving Average Estimator -->
+    
     Each node maintains an EWMA estimate of its local encounter rate.
-    K is recomputed at every encounter as:
+    K is recomputed at EVERY ENCOUNTER as:
 
         K = clip(round(K_base * (lambda_ref / lambda_hat)), K_min, K_max)
 
-    where lambda_hat is the EWMA encounter rate estimate,
-    lambda_ref is a reference (design) rate, and K_base is the
-    base copy budget at the reference rate.
-
     Intuition:
-      - Sparse network (low lambda_hat) → fewer encounters → need MORE copies
-        to ensure delivery → K increases.
-      - Dense network (high lambda_hat) → many encounters → fewer copies needed
-        → K decreases (saves overhead).
+      - sparse network (small lambda_hat) -> fewer encounters -> need MORE copies
+        to ensure delivery -> K increases
+      - dense network (large lambda_hat) -> many encounters -> fewer copies needed
+        -> K decreases
 
-    The forwarding rule is identical to binary Spray-and-Wait.
+    The forwarding rule same as normal Spray & Wait
     """
 
     def __init__(self, nid, source, destination,
@@ -186,11 +164,11 @@ class AdaSprayNode(BaseNode):
         self.K_min = K_min
         self.K_max = K_max
 
-        # State
+        # state
         self.copies = K_base if nid == source else 0
         self.lambda_hat = lambda_ref  # initial estimate = reference
         self.last_encounter_time = 0.0
-        self.k_history = []           # track K over time (for figures)
+        self.k_history = []          
 
     def _update_rate(self):
         """Update EWMA encounter rate estimate."""
@@ -207,7 +185,7 @@ class AdaSprayNode(BaseNode):
         """Compute adaptive K from current encounter rate estimate."""
         if self.lambda_hat <= 0:
             return self.K_max
-        # Inverse relationship: sparse → more copies
+        # inverse relationship: sparse = more copies
         k = round(self.K_base * (self.lambda_ref / self.lambda_hat))
         k = max(self.K_min, min(self.K_max, k))
         self.k_history.append((self.sim.time, k))
@@ -217,13 +195,10 @@ class AdaSprayNode(BaseNode):
         self._update_rate()
         current_K = self._compute_K()
 
-        # Re-budget copies toward current K (only for source/spraying nodes)
-        # If we have more copies than current K suggests, trim.
-        # If we have fewer and are still spraying, don't add (conservative).
+        # rebudget copies toward current K
         if self.copies > current_K:
             self.copies = current_K  # adapt downward immediately
 
-        # Direct delivery check
         if self.copies >= 1 and other.nid == self.destination:
             self.transmissions += 1
             other.has_packet = True
@@ -231,7 +206,7 @@ class AdaSprayNode(BaseNode):
                 other.delivery_time = self.sim.time
             return
 
-        # Spray phase: share half if we have >= 2 copies and other has none
+        # spray
         if self.copies >= 2 and isinstance(other, AdaSprayNode) and other.copies == 0:
             give = self.copies // 2
             self.transmissions += 1
@@ -241,15 +216,11 @@ class AdaSprayNode(BaseNode):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Experiment Runner
+# Experiment runs
 # ─────────────────────────────────────────────────────────────────────────────
 
 def run_trial(protocol, n_nodes, encounter_rate, duration, K=None,
               K_base=4, lambda_ref=1.0, alpha=0.3, seed=42):
-    """
-    Run one simulation trial.
-    Returns dict with delivery_time, transmissions, delivered (bool).
-    """
     source = 'N0'
     destination = f'N{n_nodes - 1}'
 
@@ -276,7 +247,6 @@ def run_trial(protocol, n_nodes, encounter_rate, duration, K=None,
     dest_node = sim.nodes[destination]
     total_tx = sum(n.transmissions for n in sim.nodes.values())
 
-    # Collect AdaSpray K history if applicable
     k_history = []
     if protocol == 'adaspray':
         src_node = sim.nodes[source]
@@ -293,10 +263,6 @@ def run_trial(protocol, n_nodes, encounter_rate, duration, K=None,
 def run_experiment(n_trials=30, n_nodes=10, duration=100.0,
                    encounter_rates=None, fixed_K_values=None,
                    K_base=4, lambda_ref=1.0, alpha=0.3):
-    """
-    Run full experiment across encounter rates and protocols.
-    Returns nested dict: results[protocol][rate] = list of trial dicts.
-    """
     if encounter_rates is None:
         encounter_rates = [0.2, 0.5, 1.0, 2.0, 4.0]
     if fixed_K_values is None:
@@ -314,21 +280,17 @@ def run_experiment(n_trials=30, n_nodes=10, duration=100.0,
         for trial in range(n_trials):
             seed = trial * 1000 + int(rate * 100)
 
-            # Hold and Deliver
             r = run_trial('hold', n_nodes, rate, duration, seed=seed)
             results['hold'][rate].append(r)
 
-            # Epidemic
             r = run_trial('epidemic', n_nodes, rate, duration, seed=seed)
             results['epidemic'][rate].append(r)
 
-            # AdaSpray
             r = run_trial('adaspray', n_nodes, rate, duration,
                           K_base=K_base, lambda_ref=lambda_ref, alpha=alpha,
                           seed=seed)
             results['adaspray'][rate].append(r)
 
-            # Fixed Spray-and-Wait for each K
             for k in fixed_K_values:
                 r = run_trial('fixed', n_nodes, rate, duration, K=k, seed=seed)
                 results[f'fixed_K{k}'][rate].append(r)
@@ -342,7 +304,6 @@ def run_experiment(n_trials=30, n_nodes=10, duration=100.0,
 
 
 def summarize(results):
-    """Compute mean ± std for each metric per protocol per rate."""
     summary = {}
     for proto, rate_dict in results.items():
         summary[proto] = {}
@@ -356,7 +317,7 @@ def summarize(results):
             mean_delay = (sum(times) / len(times)) if times else float('nan')
             mean_tx = sum(txs) / n
 
-            # Std dev
+            # std dev
             def std(lst):
                 if len(lst) < 2:
                     return 0.0
@@ -387,9 +348,9 @@ if __name__ == '__main__':
     N_NODES         = 10
     DURATION        = 150.0
     N_TRIALS        = 50
-    K_BASE          = 4      # AdaSpray: budget at lambda_ref
-    LAMBDA_REF      = 1.0    # AdaSpray: reference encounter rate
-    ALPHA           = 0.3    # AdaSpray: EWMA smoothing
+    K_BASE          = 4      
+    LAMBDA_REF      = 1.0    
+    ALPHA           = 0.3    
 
     print(f"Nodes: {N_NODES}, Duration: {DURATION}, Trials: {N_TRIALS}")
     print(f"Encounter rates: {ENCOUNTER_RATES}")
@@ -409,7 +370,6 @@ if __name__ == '__main__':
 
     summary = summarize(results)
 
-    # Print summary table
     print("\nDelivery Ratio:")
     print(f"{'Rate':<8}", end='')
     protos = ['hold', 'epidemic', 'adaspray'] + [f'fixed_K{k}' for k in FIXED_K_VALUES]
@@ -446,9 +406,7 @@ if __name__ == '__main__':
             v = summary[p][rate]['mean_tx']
             print(f"{v:<14.2f}", end='')
         print()
-
-    # Save for plotting
-    # Convert float keys to strings for JSON
+# plotting stuff
     def jsonify(d):
         if isinstance(d, dict):
             return {str(k): jsonify(v) for k, v in d.items()}
@@ -460,4 +418,3 @@ if __name__ == '__main__':
     with open('results.json', 'w') as f:
         json.dump(jsonify(summary), f, indent=2)
     print("\nResults saved to results.json")
-    print("Run plot_results.py to generate figures.")
